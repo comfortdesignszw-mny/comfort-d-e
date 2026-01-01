@@ -1,0 +1,2014 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Comfort Designs and Electronics</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Comfort Designs and Electronics - Modern products, services, and electronics with WhatsApp-based ordering." />
+  <meta name="keywords" content="Comfort Designs, electronics, services, e-commerce, WhatsApp ordering" />
+  <meta name="theme-color" content="#02c7f2" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            cyan: '#00e5ff',
+            darkBlue: '#020617',
+            accentBlue: '#0ea5e9',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background: radial-gradient(circle at top, #0b1120 0, #020617 40%, #000 100%);
+      color: #e5e7eb;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif;
+    }
+    .glass {
+      background: rgba(15,23,42,0.85);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(148,163,184,0.2);
+    }
+    .gradient-border {
+      position: relative;
+      border-radius: 1rem;
+      overflow: hidden;
+    }
+    .gradient-border::before {
+      content: "";
+      position: absolute;
+      inset: -2px;
+      background: linear-gradient(135deg, #22d3ee, #0ea5e9, #38bdf8, #22c55e);
+      opacity: 0.7;
+      z-index: -1;
+    }
+    .gradient-border-inner {
+      border-radius: 0.9rem;
+      background: radial-gradient(circle at top left, rgba(56,189,248,0.12), rgba(15,23,42,0.95));
+    }
+    .hero-bg {
+      background: radial-gradient(circle at top left, rgba(56,189,248,0.25), transparent 55%),
+                  radial-gradient(circle at bottom right, rgba(37,99,235,0.35), transparent 55%);
+    }
+    .btn-primary {
+      @apply px-5 py-2.5 rounded-full text-sm font-semibold bg-cyan text-slate-900 hover:bg-sky-300 transition shadow-lg shadow-cyan/30;
+    }
+    .btn-outline {
+      @apply px-5 py-2.5 rounded-full text-sm font-semibold border border-cyan/60 text-cyan hover:bg-cyan/10 transition;
+    }
+    .nav-link-active {
+      @apply text-cyan;
+    }
+    .ticker {
+      overflow: hidden;
+      white-space: nowrap;
+      position: relative;
+    }
+    .ticker-content {
+      display: inline-block;
+      padding-left: 100%;
+      animation: ticker-scroll 30s linear infinite;
+    }
+    @keyframes ticker-scroll {
+      0% { transform: translate3d(0,0,0); }
+      100% { transform: translate3d(-100%,0,0); }
+    }
+    .fade-in {
+      animation: fadeIn 0.5s ease-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .card-hover {
+      transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease, background 0.25s ease;
+    }
+    .card-hover:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 20px 45px rgba(15,23,42,0.9);
+      border-color: rgba(56,189,248,0.5);
+      background: radial-gradient(circle at top, rgba(56,189,248,0.16), rgba(15,23,42,0.96));
+    }
+    .scrollbar-thin::-webkit-scrollbar {
+      height: 4px;
+      width: 4px;
+    }
+    .scrollbar-thin::-webkit-scrollbar-thumb {
+      background: rgba(148,163,184,0.7);
+      border-radius: 9999px;
+    }
+    .scrollbar-thin::-webkit-scrollbar-track {
+      background: transparent;
+    }
+  </style>
+</head>
+<body class="min-h-screen text-slate-100">
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+<script type="text/babel">
+  const { useState, useEffect, useMemo } = React;
+
+  // --- Mock "Database" with localStorage persistence ---
+  const STORAGE_KEYS = {
+    PRODUCTS: 'cde_products',
+    BLOGS: 'cde_blogs',
+    SETTINGS: 'cde_settings',
+    TESTIMONIALS: 'cde_testimonials',
+    AUTH: 'cde_auth_token'
+  };
+
+  const defaultSettings = {
+    companyName: 'Comfort Designs and Electronics',
+    whatsappNumber: '+1234567890',
+    contactNumber: '+1234567890',
+    contactNumberAlt: '+0987654321',
+    email: 'support@comfortdesigns.co',
+    address: '123 Comfort Avenue, Tech City, Country',
+    websiteUrl: 'https://comfortdesigns-electronics.example.com',
+    facebook: 'https://facebook.com/comfortdesigns',
+    instagram: 'https://instagram.com/comfortdesigns',
+    twitter: 'https://x.com/comfortdesigns'
+  };
+
+  const defaultProducts = [
+    {
+      id: 'p1',
+      name: 'Premium Ergonomic Office Chair',
+      description: 'Breathable mesh back, 4D armrests, lumbar support, and smooth-rolling casters designed for all-day comfort.',
+      price: 189.99,
+      category: 'Product',
+      featured: true,
+      image: 'https://images.pexels.com/photos/37347/office-freelancer-computer-business-37347.jpeg?auto=compress&cs=tinysrgb&w=800'
+    },
+    {
+      id: 'p2',
+      name: 'Smart LED Ambient Lighting Kit',
+      description: 'Wi-Fi enabled LED strips and bars to transform your workspace, TV, or bedroom with dynamic scenes.',
+      price: 79.99,
+      category: 'Product',
+      featured: true,
+      image: 'https://images.pexels.com/photos/7238759/pexels-photo-7238759.jpeg?auto=compress&cs=tinysrgb&w=800'
+    },
+    {
+      id: 's1',
+      name: 'Home Office Setup Consultation',
+      description: 'Remote or on-site consulting to design a high-performance, ergonomic, and aesthetic workspace.',
+      price: 120,
+      category: 'Service',
+      featured: true,
+      image: 'https://images.pexels.com/photos/1957478/pexels-photo-1957478.jpeg?auto=compress&cs=tinysrgb&w=800'
+    },
+    {
+      id: 's2',
+      name: 'Smart Home Automation Setup',
+      description: 'We plan, configure, and install smart lighting, security, and entertainment systems for your home.',
+      price: 0,
+      category: 'Service',
+      featured: false,
+      image: 'https://images.pexels.com/photos/3945683/pexels-photo-3945683.jpeg?auto=compress&cs=tinysrgb&w=800'
+    }
+  ];
+
+  const defaultBlogs = [
+    {
+      id: 'b1',
+      title: 'Designing the Perfect Work-From-Home Setup',
+      image: 'https://images.pexels.com/photos/7014336/pexels-photo-7014336.jpeg?auto=compress&cs=tinysrgb&w=800',
+      content: 'A well-designed home office blends ergonomics, lighting, and technology. Start with a supportive chair and a desk that matches your height. Add layered lighting — ambient, task, and accent — and keep cables hidden for a clean visual experience. Finally, integrate smart devices to automate your routines and reduce friction throughout your day.',
+      date: '2025-12-01',
+      featuredOnTicker: true
+    },
+    {
+      id: 'b2',
+      title: 'Why Lighting Matters More Than You Think',
+      image: 'https://images.pexels.com/photos/7238757/pexels-photo-7238757.jpeg?auto=compress&cs=tinysrgb&w=800',
+      content: 'Lighting affects mood, productivity, and even sleep quality. In this article, we explore color temperature, lumens, and how to combine functional and decorative lighting to transform your space.',
+      date: '2025-11-10',
+      featuredOnTicker: true
+    },
+    {
+      id: 'b3',
+      title: '5 Smart Devices That Instantly Upgrade Any Home',
+      image: 'https://images.pexels.com/photos/1444416/pexels-photo-1444416.jpeg?auto=compress&cs=tinysrgb&w=800',
+      content: 'From smart speakers to automated blinds, a few devices can dramatically improve comfort and convenience. Here are five essentials we recommend for most homes.',
+      date: '2025-10-15',
+      featuredOnTicker: false
+    }
+  ];
+
+  const defaultTestimonials = [
+    {
+      id: 't1',
+      name: 'Sarah Johnson',
+      message: 'Comfort Designs completely transformed my tiny spare room into a productive office. My back has never felt better.',
+      image: ''
+    },
+    {
+      id: 't2',
+      name: 'Michael Chen',
+      message: 'The smart lighting installation is incredible. Everything works from my phone and looks amazing.',
+      image: ''
+    }
+  ];
+
+  function loadOrInit(key, fallback) {
+    if (typeof window === 'undefined') return fallback;
+    const stored = window.localStorage.getItem(key);
+    if (stored) {
+      try { return JSON.parse(stored); } catch (e) { return fallback; }
+    }
+    window.localStorage.setItem(key, JSON.stringify(fallback));
+    return fallback;
+  }
+
+  function saveToStorage(key, value) {
+    if (typeof window === 'undefined') return;
+    window.localStorage.setItem(key, JSON.stringify(value));
+  }
+
+  // --- Utility: WhatsApp link ---
+  function buildWhatsAppLink(number, message) {
+    const sanitized = (number || '').replace(/[^\d+]/g, '');
+    const encodedMessage = encodeURIComponent(message);
+    return `https://wa.me/${sanitized}?text=${encodedMessage}`;
+  }
+
+  // --- Layout Components ---
+  function Logo() {
+    return (
+      <div className="flex items-center gap-2">
+        <div className="w-9 h-9 rounded-2xl bg-gradient-to-br from-cyan to-sky-500 flex items-center justify-center shadow-lg shadow-cyan/40">
+          <span className="text-slate-900 font-extrabold text-xl">C</span>
+        </div>
+        <div className="leading-tight">
+          <div className="font-semibold text-sm sm:text-base">Comfort Designs</div>
+          <div className="text-[10px] sm:text-xs text-slate-400 -mt-0.5">and Electronics</div>
+        </div>
+      </div>
+    );
+  }
+
+  function Header({ currentRoute, onNavigate, isAdminAuthenticated, onLogout }) {
+    const navItems = [
+      { label: 'Home', path: '/' },
+      { label: 'Products & Services', path: '/catalog' },
+      { label: 'Blog', path: '/blog' },
+      { label: 'About', path: '/about' },
+      { label: 'Contact', path: '/contact' }
+    ];
+    const [mobileOpen, setMobileOpen] = useState(false);
+
+    return (
+      <header className="sticky top-0 z-40 border-b border-slate-800/60 bg-slate-950/80 backdrop-blur-xl">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <div className="flex items-center justify-between h-16">
+            <div className="flex items-center gap-3">
+              <Logo />
+            </div>
+            <nav className="hidden md:flex items-center gap-6 text-sm">
+              {navItems.map(item => (
+                <button
+                  key={item.path}
+                  onClick={() => onNavigate(item.path)}
+                  className={`hover:text-cyan transition ${
+                    currentRoute === item.path ? 'text-cyan font-semibold' : 'text-slate-300'
+                  }`}
+                >
+                  {item.label}
+                </button>
+              ))}
+              <span className="mx-2 h-5 w-px bg-slate-700" />
+              <button
+                onClick={() => onNavigate('/admin')}
+                className={`text-xs font-semibold px-3 py-1.5 rounded-full border ${
+                  currentRoute.startsWith('/admin')
+                    ? 'border-cyan text-cyan bg-cyan/10'
+                    : 'border-slate-600 text-slate-300 hover:border-cyan hover:text-cyan'
+                } transition`}
+              >
+                Admin
+              </button>
+              {isAdminAuthenticated && (
+                <button
+                  onClick={onLogout}
+                  className="text-[11px] text-slate-400 hover:text-rose-400 ml-1"
+                >
+                  Logout
+                </button>
+              )}
+            </nav>
+            <button
+              className="md:hidden text-slate-200 hover:text-cyan"
+              onClick={() => setMobileOpen(!mobileOpen)}
+              aria-label="Toggle navigation"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none"
+                   viewBox="0 0 24 24" stroke="currentColor">
+                {mobileOpen ? (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
+                        d="M6 18L18 6M6 6l12 12" />
+                ) : (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
+                        d="M4 6h16M4 12h16M4 18h16" />
+                )}
+              </svg>
+            </button>
+          </div>
+          {mobileOpen && (
+            <div className="md:hidden pb-4 border-t border-slate-800/80">
+              <div className="flex flex-col gap-2 pt-3 text-sm">
+                {navItems.map(item => (
+                  <button
+                    key={item.path}
+                    onClick={() => { onNavigate(item.path); setMobileOpen(false); }}
+                    className={`text-left px-1 py-1 rounded ${
+                      currentRoute === item.path ? 'text-cyan font-semibold' : 'text-slate-300'
+                    }`}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+                <div className="flex items-center gap-2 pt-2">
+                  <button
+                    onClick={() => { onNavigate('/admin'); setMobileOpen(false); }}
+                    className="text-xs font-semibold px-3 py-1.5 rounded-full border border-slate-600 text-slate-300 hover:border-cyan hover:text-cyan transition"
+                  >
+                    Admin
+                  </button>
+                  {isAdminAuthenticated && (
+                    <button
+                      onClick={() => { onLogout(); setMobileOpen(false); }}
+                      className="text-[11px] text-slate-400 hover:text-rose-400"
+                    >
+                      Logout
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </header>
+    );
+  }
+
+  function Footer({ settings }) {
+    return (
+      <footer className="border-t border-slate-800/70 mt-16 bg-slate-950/70">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 text-xs sm:text-sm text-slate-400">
+          <div className="flex flex-col sm:flex-row justify-between gap-6">
+            <div className="space-y-1">
+              <div className="font-semibold text-slate-200 text-sm">
+                {settings.companyName || defaultSettings.companyName}
+              </div>
+              <div>{settings.address}</div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <span>WhatsApp:</span>
+                <a href={buildWhatsAppLink(settings.whatsappNumber || defaultSettings.whatsappNumber, 'Hello')}
+                   target="_blank" rel="noopener noreferrer"
+                   className="text-cyan hover:underline">
+                  {settings.whatsappNumber}
+                </a>
+              </div>
+            </div>
+            <div className="space-y-1">
+              <div className="font-semibold text-slate-200 text-xs">Quick Links</div>
+              <div className="flex gap-3">
+                {settings.facebook && (
+                  <a href={settings.facebook} target="_blank" rel="noopener noreferrer"
+                     className="hover:text-cyan">Facebook</a>
+                )}
+                {settings.instagram && (
+                  <a href={settings.instagram} target="_blank" rel="noopener noreferrer"
+                     className="hover:text-cyan">Instagram</a>
+                )}
+                {settings.twitter && (
+                  <a href={settings.twitter} target="_blank" rel="noopener noreferrer"
+                     className="hover:text-cyan">X</a>
+                )}
+              </div>
+              <div className="text-[11px] text-slate-500">
+                © {new Date().getFullYear()} {settings.companyName || defaultSettings.companyName}. All rights reserved.
+              </div>
+            </div>
+          </div>
+        </div>
+      </footer>
+    );
+  }
+
+  // --- Reusable UI Components ---
+  function ProductCard({ item, settings, onOpenDetails }) {
+    const priceLabel = item.price && item.price > 0
+      ? `$${item.price.toFixed(2)}`
+      : item.category === 'Service'
+        ? 'Contact for quote'
+        : 'On request';
+
+    const message =
+`Hello ${settings.companyName || defaultSettings.companyName},
+I would like to place an order with the following details:
+Product/Service: ${item.name}
+Price: ${item.price && item.price > 0 ? `$${item.price.toFixed(2)}` : 'N/A'}
+Quantity: 1
+Ordered from: ${settings.companyName || defaultSettings.companyName}
+Website: ${settings.websiteUrl || defaultSettings.websiteUrl}
+Please assist. Thank you.`;
+
+    const waLink = buildWhatsAppLink(settings.whatsappNumber || defaultSettings.whatsappNumber, message);
+
+    return (
+      <div className="gradient-border card-hover h-full">
+        <div className="gradient-border-inner h-full flex flex-col border border-slate-800/70 rounded-2xl">
+          <div className="relative">
+            <img
+              src={item.image}
+              alt={item.name}
+              className="w-full h-44 object-cover rounded-t-2xl border-b border-slate-800/80"
+            />
+            {item.featured && (
+              <div className="absolute top-2 left-2 px-2 py-1 rounded-full text-[10px] font-semibold bg-cyan text-slate-900 shadow">
+                Featured
+              </div>
+            )}
+            <div className="absolute bottom-2 right-2 px-2 py-1 rounded-full text-[10px] bg-black/60 text-slate-200 border border-slate-700">
+              {item.category}
+            </div>
+          </div>
+          <div className="flex-1 flex flex-col p-3.5 space-y-2">
+            <div className="text-sm font-semibold text-slate-50 line-clamp-1">{item.name}</div>
+            <p className="text-xs text-slate-400 line-clamp-2">{item.description}</p>
+            <div className="mt-1 flex items-center justify-between text-xs">
+              <div className="font-semibold text-cyan">{priceLabel}</div>
+              <button
+                onClick={() => onOpenDetails(item)}
+                className="text-[11px] text-slate-300 hover:text-cyan underline-offset-2 hover:underline"
+              >
+                View details
+              </button>
+            </div>
+            <button
+              onClick={() => window.open(waLink, '_blank')}
+              className="mt-2 w-full inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-400/90 text-slate-900 text-[11px] font-semibold hover:bg-emerald-300 transition"
+            >
+              Order via WhatsApp
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C6.486 2 2 6.019 2 11.063c0 1.93.559 3.72 1.523 5.246L2 22l5.852-1.514A9.94 9.94 0 0 0 12 20.125C17.514 20.125 22 16.106 22 11.063 22 6.019 17.514 2 12 2Zm0 2c4.056 0 7.353 2.988 7.353 7.063 0 4.074-3.297 7.062-7.353 7.062-1.254 0-2.43-.305-3.473-.844l-.248-.127-3.472.9.926-3.31-.162-.26A6.898 6.898 0 0 1 4.647 11.06C4.647 6.987 7.944 4 12 4Zm-2.008 3.5a.69.69 0 0 0-.493.24c-.15.173-.52.61-.52 1.48 0 .87.533 1.712.607 1.83.074.118 1.046 1.723 2.57 2.475 1.274.626 1.83.703 2.148.703.318 0 .681-.096.93-.27.249-.174.406-.44.463-.733.057-.293.057-.545.04-.597-.017-.052-.062-.083-.13-.114-.067-.03-1.04-.51-1.51-.708-.2-.086-.435-.018-.55.138-.14.186-.5.638-.63.77-.13.132-.24.148-.445.05-.205-.099-.869-.321-1.654-1.024-.611-.548-1.025-1.223-1.146-1.429-.12-.206-.013-.316.086-.42.088-.092.205-.239.307-.359.103-.12.137-.199.206-.332.069-.132.034-.25-.017-.35-.05-.1-.45-1.079-.618-1.475-.163-.384-.33-.331-.45-.336Z"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  function BlogCard({ blog, onOpen }) {
+    return (
+      <div
+        className="glass card-hover rounded-2xl border border-slate-800/70 overflow-hidden flex flex-col cursor-pointer"
+        onClick={() => onOpen(blog)}
+      >
+        <img src={blog.image} alt={blog.title} className="w-full h-40 object-cover" />
+        <div className="p-4 flex-1 flex flex-col gap-2">
+          <div className="text-xs text-slate-400">{new Date(blog.date).toLocaleDateString()}</div>
+          <div className="text-sm font-semibold text-slate-50 line-clamp-2">{blog.title}</div>
+          <p className="text-xs text-slate-400 line-clamp-3">{blog.content}</p>
+        </div>
+      </div>
+    );
+  }
+
+  // --- Pages ---
+  function HomePage({ products, blogs, settings, onNavigate, onOpenProductDetails }) {
+    const featuredProducts = products.filter(p => p.featured);
+    const tickerBlogs = blogs.filter(b => b.featuredOnTicker);
+    const tickerTextItems = tickerBlogs.length ? tickerBlogs : blogs;
+    const featuredTickerBlog = tickerTextItems.length ? tickerTextItems[0] : null;
+
+    return (
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 pt-10 pb-16 space-y-16 fade-in">
+        {/* Hero */}
+        <section className="hero-bg rounded-3xl border border-slate-800/80 shadow-2xl shadow-cyan/15 overflow-hidden relative">
+          <div className="absolute inset-0 pointer-events-none">
+            <div className="absolute -top-40 -left-32 w-80 h-80 bg-cyan/10 rounded-full blur-3xl" />
+            <div className="absolute -bottom-40 -right-32 w-96 h-96 bg-sky-500/15 rounded-full blur-3xl" />
+          </div>
+          <div className="relative grid md:grid-cols-2 gap-8 md:gap-10 p-6 sm:p-10 lg:p-12 items-center">
+            <div className="space-y-4">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900/60 border border-slate-700 text-[11px] text-slate-300">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                WhatsApp-first comfort & electronics studio
+              </div>
+              <h1 className="text-2.5xl sm:text-4xl lg:text-5xl font-semibold tracking-tight text-slate-50">
+                Design-forward comfort.
+                <span className="block text-transparent bg-clip-text bg-gradient-to-r from-cyan via-sky-400 to-blue-400">
+                  Intelligent electronics.
+                </span>
+              </h1>
+              <p className="text-sm sm:text-base text-slate-300 max-w-xl">
+                Comfort Designs and Electronics blends ergonomic furniture, ambient lighting, and smart tech
+                into seamless spaces. Browse our curated products and services, then complete your order in seconds via WhatsApp.
+              </p>
+              <div className="flex flex-wrap items-center gap-3 pt-1">
+                <button
+                  onClick={() => onNavigate('/catalog')}
+                  className="btn-primary inline-flex items-center gap-1.5"
+                >
+                  Shop Products & Services
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none"
+                       viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
+                          d="M17.25 8.25L21 12m0 0-3.75 3.75M21 12H3" />
+                  </svg>
+                </button>
+                <button
+                  onClick={() => onNavigate('/contact')}
+                  className="btn-outline inline-flex items-center gap-1.5"
+                >
+                  Contact Us
+                </button>
+              </div>
+              <div className="flex flex-wrap items-center gap-3 pt-3 text-xs text-slate-400">
+                <div className="flex items-center gap-1.5">
+                  <span className="w-5 h-5 rounded-full border border-emerald-400/60 flex items-center justify-center text-[10px] text-emerald-300">
+                    ✓
+                  </span>
+                  WhatsApp-based ordering
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="w-5 h-5 rounded-full border border-sky-400/60 flex items-center justify-center text-[10px] text-sky-300">
+                    ✓
+                  </span>
+                  Products & services in one place
+                </div>
+              </div>
+            </div>
+            <div className="relative">
+              <div className="absolute -top-4 -right-4 w-32 h-32 bg-cyan/20 rounded-full blur-3xl" />
+              <div className="absolute bottom-0 left-0 w-40 h-40 bg-blue-500/20 rounded-full blur-3xl" />
+              <div className="relative glass rounded-3xl border border-slate-700/80 p-4 sm:p-5 shadow-xl">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="text-xs text-slate-400">Live comfort snapshot</div>
+                  <div className="flex items-center gap-1.5 text-[11px] text-emerald-400">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+                    Online
+                  </div>
+                </div>
+                <div className="grid grid-cols-3 gap-3 mb-4 text-xs">
+                  <div className="glass rounded-2xl border border-slate-700/80 p-2.5 flex flex-col gap-1">
+                    <div className="text-[11px] text-slate-400">Ergonomic</div>
+                    <div className="text-sm font-semibold text-slate-50">Chairs</div>
+                    <div className="text-[10px] text-emerald-400">Posture-optimized</div>
+                  </div>
+                  <div className="glass rounded-2xl border border-slate-700/80 p-2.5 flex flex-col gap-1">
+                    <div className="text-[11px] text-slate-400">Ambient</div>
+                    <div className="text-sm font-semibold text-slate-50">Lighting</div>
+                    <div className="text-[10px] text-cyan">Scene presets</div>
+                  </div>
+                  <div className="glass rounded-2xl border border-slate-700/80 p-2.5 flex flex-col gap-1">
+                    <div className="text-[11px] text-slate-400">Smart</div>
+                    <div className="text-sm font-semibold text-slate-50">Automation</div>
+                    <div className="text-[10px] text-sky-400">Voice-ready</div>
+                  </div>
+                </div>
+                <div className="glass rounded-2xl border border-slate-700/80 p-3 flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan to-sky-500 flex items-center justify-center text-slate-900 text-xl font-bold">
+                    W
+                  </div>
+                  <div className="flex-1">
+                    <div className="text-xs text-slate-400">Primary channel</div>
+                    <div className="text-sm font-semibold text-slate-50">Order via WhatsApp</div>
+                    <div className="text-[11px] text-slate-400 truncate">
+                      {settings.whatsappNumber || defaultSettings.whatsappNumber}
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      const msg = 'Hello, I would like to learn more about your products and services.';
+                      window.open(buildWhatsAppLink(settings.whatsappNumber || defaultSettings.whatsappNumber, msg), '_blank');
+                    }}
+                    className="px-3 py-1.5 rounded-full bg-emerald-400/90 text-slate-900 text-[11px] font-semibold hover:bg-emerald-300 transition"
+                  >
+                    Chat now
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Featured Products & Services */}
+        <section>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg sm:text-xl font-semibold text-slate-50">Featured Products & Services</h2>
+            <button
+              onClick={() => onNavigate('/catalog')}
+              className="text-xs text-cyan hover:underline"
+            >
+              View full catalog
+            </button>
+          </div>
+          {featuredProducts.length === 0 ? (
+            <div className="text-sm text-slate-400">No featured items yet. Check back soon.</div>
+          ) : (
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {featuredProducts.map(p => (
+                <ProductCard
+                  key={p.id}
+                  item={p}
+                  settings={settings}
+                  onOpenDetails={(item) => onOpenProductDetails(item)}
+                />
+              ))}
+            </div>
+          )}
+        </section>
+
+        {/* Blog ticker */}
+        <section className="glass rounded-3xl border border-slate-800/80 p-4 sm:p-5 space-y-4">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-full bg-gradient-to-br from-cyan to-sky-500 flex items-center justify-center text-slate-900 text-xs font-bold shadow shadow-cyan/40">
+                B
+              </div>
+              <div>
+                <div className="text-xs font-semibold text-slate-200">Latest from the blog</div>
+                <div className="text-[11px] text-slate-400">Ideas to upgrade your comfort & electronics</div>
+              </div>
+            </div>
+            <button
+              onClick={() => onNavigate('/blog')}
+              className="text-[11px] text-cyan hover:underline"
+            >
+              View blog
+            </button>
+          </div>
+          <div className="ticker text-xs bg-slate-900/60 rounded-full border border-slate-800/80 px-3 py-1.5">
+            <div className="ticker-content flex items-center gap-6">
+              {tickerTextItems.length === 0 ? (
+                <span className="text-slate-400">No blog posts yet. Content coming soon.</span>
+              ) : (
+                tickerTextItems.map(b => (
+                  <span key={b.id} className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-cyan" />
+                    <span className="font-semibold text-slate-100">{b.title}</span>
+                    <span className="text-slate-500">• {new Date(b.date).toLocaleDateString()}</span>
+                  </span>
+                ))
+              )}
+            </div>
+          </div>
+          {featuredTickerBlog && (
+            <div className="flex items-center gap-4 mt-1">
+              <div className="relative w-28 h-16 rounded-2xl overflow-hidden border border-slate-800/80">
+                <div className="absolute inset-0 animate-[ticker-image_20s_linear_infinite_alternate]">
+                  <style>{`
+                    @keyframes ticker-image {
+                      0% { transform: translateX(0); }
+                      100% { transform: translateX(-10%); }
+                    }
+                  `}</style>
+                  <img
+                    src={featuredTickerBlog.image}
+                    alt={featuredTickerBlog.title}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              </div>
+              <div className="flex-1 text-[11px] text-slate-300">
+                <span className="font-semibold text-slate-100 mr-1">
+                  {featuredTickerBlog.title}
+                </span>
+                <span className="text-slate-400">
+                  {featuredTickerBlog.content.slice(0, 120)}...
+                </span>
+              </div>
+            </div>
+          )}
+        </section>
+      </main>
+    );
+  }
+
+  function CatalogPage({ products, settings, onOpenProductDetails }) {
+    const [filter, setFilter] = useState('all');
+
+    const filtered = useMemo(() => {
+      if (filter === 'all') return products;
+      if (filter === 'products') return products.filter(p => p.category === 'Product');
+      if (filter === 'services') return products.filter(p => p.category === 'Service');
+      if (filter === 'featured') return products.filter(p => p.featured);
+      return products;
+    }, [products, filter]);
+
+    return (
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 pt-10 pb-16 fade-in">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6">
+          <div>
+            <h1 className="text-xl sm:text-2xl font-semibold text-slate-50">Products & Services</h1>
+            <p className="text-sm text-slate-400 max-w-xl">
+              Explore our full catalog of ergonomic furniture, ambient lighting, and smart-home services.
+              Every item can be ordered instantly via WhatsApp.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2 text-xs">
+            <button
+              onClick={() => setFilter('all')}
+              className={`px-3 py-1.5 rounded-full border ${
+                filter === 'all'
+                  ? 'border-cyan bg-cyan/10 text-cyan'
+                  : 'border-slate-700 text-slate-300 hover:border-cyan hover:text-cyan'
+              }`}
+            >
+              All
+            </button>
+            <button
+              onClick={() => setFilter('products')}
+              className={`px-3 py-1.5 rounded-full border ${
+                filter === 'products'
+                  ? 'border-cyan bg-cyan/10 text-cyan'
+                  : 'border-slate-700 text-slate-300 hover:border-cyan hover:text-cyan'
+              }`}
+            >
+              Products
+            </button>
+            <button
+              onClick={() => setFilter('services')}
+              className={`px-3 py-1.5 rounded-full border ${
+                filter === 'services'
+                  ? 'border-cyan bg-cyan/10 text-cyan'
+                  : 'border-slate-700 text-slate-300 hover:border-cyan hover:text-cyan'
+              }`}
+            >
+              Services
+            </button>
+            <button
+              onClick={() => setFilter('featured')}
+              className={`px-3 py-1.5 rounded-full border ${
+                filter === 'featured'
+                  ? 'border-cyan bg-cyan/10 text-cyan'
+                  : 'border-slate-700 text-slate-300 hover:border-cyan hover:text-cyan'
+              }`}
+            >
+              Featured
+            </button>
+          </div>
+        </div>
+        {filtered.length === 0 ? (
+          <div className="text-sm text-slate-400 mt-4">No items match this filter yet.</div>
+        ) : (
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filtered.map(item => (
+              <ProductCard
+                key={item.id}
+                item={item}
+                settings={settings}
+                onOpenDetails={onOpenProductDetails}
+              />
+            ))}
+          </div>
+        )}
+      </main>
+    );
+  }
+
+  function ProductDetailsPage({ product, settings }) {
+    if (!product) {
+      return (
+        <main className="max-w-3xl mx-auto px-4 sm:px-6 pt-10 pb-16 fade-in">
+          <div className="text-sm text-slate-400">Item not found.</div>
+        </main>
+      );
+    }
+
+    const priceLabel = product.price && product.price > 0
+      ? `$${product.price.toFixed(2)}`
+      : product.category === 'Service'
+        ? 'Contact for quote'
+        : 'On request';
+
+    const message =
+`Hello ${settings.companyName || defaultSettings.companyName},
+I would like to place an order with the following details:
+Product/Service: ${product.name}
+Price: ${product.price && product.price > 0 ? `$${product.price.toFixed(2)}` : 'N/A'}
+Quantity: 1
+Ordered from: ${settings.companyName || defaultSettings.companyName}
+Website: ${settings.websiteUrl || defaultSettings.websiteUrl}
+Please assist. Thank you.`;
+
+    const waLink = buildWhatsAppLink(settings.whatsappNumber || defaultSettings.whatsappNumber, message);
+
+    return (
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 pt-10 pb-16 fade-in">
+        <div className="glass rounded-3xl border border-slate-800/80 overflow-hidden">
+          <div className="grid md:grid-cols-2 gap-0">
+            <div className="relative">
+              <img
+                src={product.image}
+                alt={product.name}
+                className="w-full h-64 md:h-full object-cover border-b md:border-b-0 md:border-r border-slate-800/80"
+              />
+              <div className="absolute top-3 left-3 px-3 py-1 rounded-full bg-black/70 text-[11px] text-slate-50 border border-slate-700">
+                {product.category}
+              </div>
+            </div>
+            <div className="p-5 sm:p-6 flex flex-col gap-4">
+              <div>
+                <div className="text-[11px] uppercase tracking-wide text-slate-400">
+                  {settings.companyName || defaultSettings.companyName}
+                </div>
+                <h1 className="text-lg sm:text-xl font-semibold text-slate-50 mt-1">
+                  {product.name}
+                </h1>
+              </div>
+              <div className="flex items-center gap-3 text-sm">
+                <div className="text-2xl font-semibold text-cyan">{priceLabel}</div>
+                {product.featured && (
+                  <span className="px-2.5 py-1 rounded-full text-[11px] bg-cyan/15 text-cyan border border-cyan/40">
+                    Featured
+                  </span>
+                )}
+              </div>
+              <p className="text-sm text-slate-300 whitespace-pre-wrap">{product.description}</p>
+              <div className="text-xs text-slate-400">
+                Orders are fulfilled via WhatsApp for personalized confirmation, delivery details, and installation options where applicable.
+              </div>
+              <div className="space-y-2 text-xs">
+                <div className="font-semibold text-slate-200">Store contact</div>
+                <div className="text-slate-300">
+                  WhatsApp:{' '}
+                  <a
+                    href={buildWhatsAppLink(settings.whatsappNumber || defaultSettings.whatsappNumber, 'Hello')}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-cyan hover:underline"
+                  >
+                    {settings.whatsappNumber || defaultSettings.whatsappNumber}
+                  </a>
+                </div>
+                <div className="text-slate-300">
+                  Phone: <span>{settings.contactNumber}</span>
+                </div>
+                <div className="text-slate-300">
+                  Email: <span>{settings.email}</span>
+                </div>
+              </div>
+              <button
+                onClick={() => window.open(waLink, '_blank')}
+                className="mt-1 inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full bg-emerald-400/90 text-slate-900 text-sm font-semibold hover:bg-emerald-300 transition shadow-lg shadow-emerald-400/30"
+              >
+                Order via WhatsApp
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2C6.486 2 2 6.019 2 11.063c0 1.93.559 3.72 1.523 5.246L2 22l5.852-1.514A9.94 9.94 0 0 0 12 20.125C17.514 20.125 22 16.106 22 11.063 22 6.019 17.514 2 12 2Zm0 2c4.056 0 7.353 2.988 7.353 7.063 0 4.074-3.297 7.062-7.353 7.062-1.254 0-2.43-.305-3.473-.844l-.248-.127-3.472.9.926-3.31-.162-.26A6.898 6.898 0 0 1 4.647 11.06C4.647 6.987 7.944 4 12 4Zm-2.008 3.5a.69.69 0 0 0-.493.24c-.15.173-.52.61-.52 1.48 0 .87.533 1.712.607 1.83.074.118 1.046 1.723 2.57 2.475 1.274.626 1.83.703 2.148.703.318 0 .681-.096.93-.27.249-.174.406-.44.463-.733.057-.293.057-.545.04-.597-.017-.052-.062-.083-.13-.114-.067-.03-1.04-.51-1.51-.708-.2-.086-.435-.018-.55.138-.14.186-.5.638-.63.77-.13.132-.24.148-.445.05-.205-.099-.869-.321-1.654-1.024-.611-.548-1.025-1.223-1.146-1.429-.12-.206-.013-.316.086-.42.088-.092.205-.239.307-.359.103-.12.137-.199.206-.332.069-.132.034-.25-.017-.35-.05-.1-.45-1.079-.618-1.475-.163-.384-.33-.331-.45-.336Z"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  function BlogPage({ blogs, onOpenBlog }) {
+    const sortedBlogs = [...blogs].sort((a, b) => new Date(b.date) - new Date(a.date));
+    return (
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 pt-10 pb-16 fade-in">
+        <div className="mb-6">
+          <h1 className="text-xl sm:text-2xl font-semibold text-slate-50">Blog & Updates</h1>
+          <p className="text-sm text-slate-400 max-w-xl">
+            Stories, guides, and announcements from Comfort Designs and Electronics.
+          </p>
+        </div>
+        {sortedBlogs.length === 0 ? (
+          <div className="text-sm text-slate-400">No blog posts published yet.</div>
+        ) : (
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {sortedBlogs.map(blog => (
+              <BlogCard key={blog.id} blog={blog} onOpen={onOpenBlog} />
+            ))}
+          </div>
+        )}
+      </main>
+    );
+  }
+
+  function BlogDetailsPage({ blog }) {
+    if (!blog) {
+      return (
+        <main className="max-w-3xl mx-auto px-4 sm:px-6 pt-10 pb-16 fade-in">
+          <div className="text-sm text-slate-400">Blog post not found.</div>
+        </main>
+      );
+    }
+    return (
+      <main className="max-w-3xl mx-auto px-4 sm:px-6 pt-10 pb-16 fade-in">
+        <article className="glass rounded-3xl border border-slate-800/80 overflow-hidden">
+          <img src={blog.image} alt={blog.title} className="w-full h-52 sm:h-64 object-cover" />
+          <div className="p-5 sm:p-6 space-y-3">
+            <div className="text-xs text-slate-400">
+              {new Date(blog.date).toLocaleDateString()}
+            </div>
+            <h1 className="text-lg sm:text-xl font-semibold text-slate-50">{blog.title}</h1>
+            <div className="text-sm text-slate-300 whitespace-pre-wrap leading-relaxed">
+              {blog.content}
+            </div>
+          </div>
+        </article>
+      </main>
+    );
+  }
+
+  function AboutPage({ settings, testimonials }) {
+    return (
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 pt-10 pb-16 fade-in space-y-10">
+        <section className="grid md:grid-cols-2 gap-8 items-start">
+          <div className="space-y-4">
+            <h1 className="text-xl sm:text-2xl font-semibold text-slate-50">About Us</h1>
+            <p className="text-sm text-slate-300">
+              {settings.companyName || defaultSettings.companyName} was created to bridge the gap between
+              beautiful interior design and intelligent electronics. We believe comfort should be intentional —
+              from the chair you sit on to the light that guides your focus and the devices that quietly automate your day.
+            </p>
+            <div className="space-y-3 text-sm text-slate-300">
+              <div>
+                <h2 className="font-semibold text-slate-100 mb-1">Mission</h2>
+                <p>
+                  To design and deliver human-centered spaces powered by smart, reliable electronics,
+                  making comfort effortless for homes and offices.
+                </p>
+              </div>
+              <div>
+                <h2 className="font-semibold text-slate-100 mb-1">Vision</h2>
+                <p>
+                  A world where every room is tuned to its occupants — responsive, ergonomic, and beautifully illuminated.
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="space-y-4">
+            <div className="glass rounded-2xl border border-slate-800/80 p-4">
+              <h2 className="text-sm font-semibold text-slate-100 mb-2">Core Values</h2>
+              <ul className="text-sm text-slate-300 space-y-1.5 list-disc list-inside">
+                <li>Comfort-first design that respects posture, focus, and rest.</li>
+                <li>Technology that enhances life without overwhelming it.</li>
+                <li>Transparent, WhatsApp-first communication with every client.</li>
+                <li>Durable products paired with thoughtful installation and support.</li>
+              </ul>
+            </div>
+            <div className="glass rounded-2xl border border-slate-800/80 p-4">
+              <h2 className="text-sm font-semibold text-slate-100 mb-1">Company Details</h2>
+              <div className="text-xs text-slate-300 space-y-1.5">
+                <div>{settings.companyName}</div>
+                <div>{settings.address}</div>
+                <div>WhatsApp: {settings.whatsappNumber}</div>
+                <div>Phone: {settings.contactNumber}</div>
+                <div>Email: {settings.email}</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-sm font-semibold text-slate-100">Customer Testimonials</h2>
+            <span className="text-[11px] text-slate-400">
+              Managed from admin portal
+            </span>
+          </div>
+          {testimonials.length === 0 ? (
+            <div className="text-sm text-slate-400">No testimonials added yet.</div>
+          ) : (
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {testimonials.map(t => (
+                <div
+                  key={t.id}
+                  className="glass rounded-2xl border border-slate-800/80 p-4 flex flex-col gap-3"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-full bg-slate-800 flex items-center justify-center text-xs font-semibold text-slate-200">
+                      {t.image ? (
+                        <img src={t.image} alt={t.name} className="w-full h-full rounded-full object-cover" />
+                      ) : (
+                        (t.name || 'C')[0].toUpperCase()
+                      )}
+                    </div>
+                    <div className="text-xs">
+                      <div className="font-semibold text-slate-50">{t.name}</div>
+                      <div className="text-slate-400">Customer</div>
+                    </div>
+                  </div>
+                  <p className="text-xs text-slate-300">“{t.message}”</p>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+      </main>
+    );
+  }
+
+  function ContactPage({ settings }) {
+    const [form, setForm] = useState({ name: '', email: '', phone: '', message: '' });
+
+    function handleSubmit(e) {
+      e.preventDefault();
+      const content =
+`Hello ${settings.companyName || defaultSettings.companyName},
+You have received a new enquiry from the website contact form:
+
+Name: ${form.name}
+Email: ${form.email}
+Phone: ${form.phone}
+Message:
+${form.message}
+
+Sent from: ${settings.websiteUrl || defaultSettings.websiteUrl}`;
+
+      window.open(buildWhatsAppLink(settings.whatsappNumber || defaultSettings.whatsappNumber, content), '_blank');
+    }
+
+    return (
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 pt-10 pb-16 fade-in grid md:grid-cols-2 gap-8">
+        <div className="space-y-4">
+          <h1 className="text-xl sm:text-2xl font-semibold text-slate-50">Contact Us</h1>
+          <p className="text-sm text-slate-300">
+            Reach out for product enquiries, service quotes, or custom comfort projects.
+            We respond fastest on WhatsApp.
+          </p>
+          <div className="glass rounded-2xl border border-slate-800/80 p-4 text-xs text-slate-300 space-y-1.5">
+            <div className="font-semibold text-slate-100 mb-1">
+              {settings.companyName || defaultSettings.companyName}
+            </div>
+            <div>{settings.address}</div>
+            <div>WhatsApp: {settings.whatsappNumber}</div>
+            <div>Phone: {settings.contactNumber}</div>
+            {settings.contactNumberAlt && (
+              <div>Alt Phone: {settings.contactNumberAlt}</div>
+            )}
+            <div>Email: {settings.email}</div>
+            <div className="pt-1">
+              Website:{' '}
+              <a
+                href={settings.websiteUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-cyan hover:underline"
+              >
+                {settings.websiteUrl}
+              </a>
+            </div>
+          </div>
+          <div className="glass rounded-2xl border border-slate-800/80 p-4 text-xs text-slate-300 space-y-1.5">
+            <div className="font-semibold text-slate-100 mb-1">WhatsApp Direct</div>
+            <p>
+              Prefer WhatsApp? Tap below to open a chat with our team and skip the form.
+            </p>
+            <button
+              onClick={() => {
+                const msg = 'Hello, I would like to learn more about your products and services.';
+                window.open(buildWhatsAppLink(settings.whatsappNumber || defaultSettings.whatsappNumber, msg), '_blank');
+              }}
+              className="mt-1 inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-emerald-400/90 text-slate-900 font-semibold text-xs hover:bg-emerald-300 transition"
+            >
+              Chat on WhatsApp
+            </button>
+          </div>
+        </div>
+        <div className="glass rounded-3xl border border-slate-800/80 p-5 sm:p-6">
+          <h2 className="text-sm font-semibold text-slate-100 mb-3">Send us a message</h2>
+          <form className="space-y-3 text-xs" onSubmit={handleSubmit}>
+            <div>
+              <label className="block mb-1 text-slate-300">Name</label>
+              <input
+                type="text"
+                required
+                className="w-full rounded-lg bg-slate-900/80 border border-slate-700 px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-cyan"
+                value={form.name}
+                onChange={e => setForm({ ...form, name: e.target.value })}
+              />
+            </div>
+            <div>
+              <label className="block mb-1 text-slate-300">Email</label>
+              <input
+                type="email"
+                required
+                className="w-full rounded-lg bg-slate-900/80 border border-slate-700 px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-cyan"
+                value={form.email}
+                onChange={e => setForm({ ...form, email: e.target.value })}
+              />
+            </div>
+            <div>
+              <label className="block mb-1 text-slate-300">Phone</label>
+              <input
+                type="tel"
+                required
+                className="w-full rounded-lg bg-slate-900/80 border border-slate-700 px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-cyan"
+                value={form.phone}
+                onChange={e => setForm({ ...form, phone: e.target.value })}
+              />
+            </div>
+            <div>
+              <label className="block mb-1 text-slate-300">Message</label>
+              <textarea
+                required
+                rows="4"
+                className="w-full rounded-lg bg-slate-900/80 border border-slate-700 px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-cyan"
+                value={form.message}
+                onChange={e => setForm({ ...form, message: e.target.value })}
+              />
+            </div>
+            <button
+              type="submit"
+              className="mt-2 inline-flex items-center justify-center gap-1.5 px-5 py-2 rounded-full bg-cyan text-slate-900 font-semibold text-xs hover:bg-sky-300 transition shadow-lg shadow-cyan/40 w-full"
+            >
+              Send to WhatsApp
+            </button>
+          </form>
+        </div>
+      </main>
+    );
+  }
+
+  // --- Admin Portal ---
+  function AdminLogin({ onLogin }) {
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
+
+    function handleSubmit(e) {
+      e.preventDefault();
+      // Simple fixed credentials for MVP
+      if (email === 'admin@example.com' && password === 'admin123') {
+        const token = 'mock-jwt-token-' + Date.now();
+        saveToStorage(STORAGE_KEYS.AUTH, token);
+        onLogin(token);
+      } else {
+        setError('Invalid email or password. Try admin@example.com / admin123');
+      }
+    }
+
+    return (
+      <main className="max-w-md mx-auto px-4 sm:px-6 pt-12 pb-16 fade-in">
+        <div className="glass rounded-3xl border border-slate-800/80 p-6 sm:p-7">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="w-8 h-8 rounded-2xl bg-gradient-to-br from-cyan to-sky-500 flex items-center justify-center text-slate-900 text-sm font-bold">
+              A
+            </div>
+            <div>
+              <div className="text-sm font-semibold text-slate-100">Admin Portal</div>
+              <div className="text-[11px] text-slate-400">Comfort Designs and Electronics</div>
+            </div>
+          </div>
+          <form className="space-y-3 text-xs" onSubmit={handleSubmit}>
+            <div>
+              <label className="block mb-1 text-slate-300">Email</label>
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                className="w-full rounded-lg bg-slate-900/80 border border-slate-700 px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-cyan"
+              />
+            </div>
+            <div>
+              <label className="block mb-1 text-slate-300">Password</label>
+              <input
+                type="password"
+                required
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                className="w-full rounded-lg bg-slate-900/80 border border-slate-700 px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-cyan"
+              />
+            </div>
+            {error && (
+              <div className="text-[11px] text-rose-300">{error}</div>
+            )}
+            <button
+              type="submit"
+              className="mt-2 inline-flex items-center justify-center gap-1.5 px-5 py-2 rounded-full bg-cyan text-slate-900 font-semibold text-xs hover:bg-sky-300 transition w-full"
+            >
+              Sign in
+            </button>
+          </form>
+        </div>
+      </main>
+    );
+  }
+
+  function AdminDashboard({ products, blogs, settings, testimonials, setProducts, setBlogs, setSettings, setTestimonials }) {
+    const [tab, setTab] = useState('products');
+
+    // Product form
+    const emptyProduct = { id: '', name: '', description: '', price: '', category: 'Product', featured: false, image: '' };
+    const [editingProduct, setEditingProduct] = useState(emptyProduct);
+
+    function handleSaveProduct(e) {
+      e.preventDefault();
+      const priceNum = parseFloat(editingProduct.price || '0') || 0;
+      if (editingProduct.id) {
+        const updated = products.map(p =>
+          p.id === editingProduct.id ? { ...editingProduct, price: priceNum } : p
+        );
+        setProducts(updated);
+        saveToStorage(STORAGE_KEYS.PRODUCTS, updated);
+      } else {
+        const newItem = {
+          ...editingProduct,
+          id: 'p-' + Date.now(),
+          price: priceNum
+        };
+        const updated = [...products, newItem];
+        setProducts(updated);
+        saveToStorage(STORAGE_KEYS.PRODUCTS, updated);
+      }
+      setEditingProduct(emptyProduct);
+    }
+
+    function handleEditProduct(p) {
+      setEditingProduct({
+        ...p,
+        price: p.price || '',
+      });
+    }
+
+    function handleDeleteProduct(id) {
+      if (!window.confirm('Delete this product/service?')) return;
+      const updated = products.filter(p => p.id !== id);
+      setProducts(updated);
+      saveToStorage(STORAGE_KEYS.PRODUCTS, updated);
+    }
+
+    // Blog form
+    const emptyBlog = { id: '', title: '', image: '', content: '', date: new Date().toISOString().slice(0,10), featuredOnTicker: false };
+    const [editingBlog, setEditingBlog] = useState(emptyBlog);
+
+    function handleSaveBlog(e) {
+      e.preventDefault();
+      if (editingBlog.id) {
+        const updated = blogs.map(b => b.id === editingBlog.id ? editingBlog : b);
+        setBlogs(updated);
+        saveToStorage(STORAGE_KEYS.BLOGS, updated);
+      } else {
+        const newItem = { ...editingBlog, id: 'b-' + Date.now() };
+        const updated = [...blogs, newItem];
+        setBlogs(updated);
+        saveToStorage(STORAGE_KEYS.BLOGS, updated);
+      }
+      setEditingBlog(emptyBlog);
+    }
+
+    function handleEditBlog(b) {
+      setEditingBlog({ ...b });
+    }
+
+    function handleDeleteBlog(id) {
+      if (!window.confirm('Delete this blog post?')) return;
+      const updated = blogs.filter(b => b.id !== id);
+      setBlogs(updated);
+      saveToStorage(STORAGE_KEYS.BLOGS, updated);
+    }
+
+    // Settings
+    function handleSaveSettings(e) {
+      e.preventDefault();
+      setSettings(settings);
+      saveToStorage(STORAGE_KEYS.SETTINGS, settings);
+      alert('Settings saved.');
+    }
+
+    // Testimonials
+    const emptyTestimonial = { id: '', name: '', message: '', image: '' };
+    const [editingTestimonial, setEditingTestimonial] = useState(emptyTestimonial);
+
+    function handleSaveTestimonial(e) {
+      e.preventDefault();
+      if (editingTestimonial.id) {
+        const updated = testimonials.map(t => t.id === editingTestimonial.id ? editingTestimonial : t);
+        setTestimonials(updated);
+        saveToStorage(STORAGE_KEYS.TESTIMONIALS, updated);
+      } else {
+        const newItem = { ...editingTestimonial, id: 't-' + Date.now() };
+        const updated = [...testimonials, newItem];
+        setTestimonials(updated);
+        saveToStorage(STORAGE_KEYS.TESTIMONIALS, updated);
+      }
+      setEditingTestimonial(emptyTestimonial);
+    }
+
+    function handleEditTestimonial(t) {
+      setEditingTestimonial({ ...t });
+    }
+
+    function handleDeleteTestimonial(id) {
+      if (!window.confirm('Delete this testimonial?')) return;
+      const updated = testimonials.filter(t => t.id !== id);
+      setTestimonials(updated);
+      saveToStorage(STORAGE_KEYS.TESTIMONIALS, updated);
+    }
+
+    return (
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 pt-10 pb-16 fade-in">
+        <div className="mb-6 flex flex-col sm:flex-row sm:items-end justify-between gap-3">
+          <div>
+            <h1 className="text-xl sm:text-2xl font-semibold text-slate-50">Admin Dashboard</h1>
+            <p className="text-sm text-slate-400">
+              Manage products, services, blog posts, company settings, and testimonials.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2 text-xs">
+            <button
+              onClick={() => setTab('products')}
+              className={`px-3 py-1.5 rounded-full border ${
+                tab === 'products'
+                  ? 'border-cyan bg-cyan/10 text-cyan'
+                  : 'border-slate-700 text-slate-300 hover:border-cyan hover:text-cyan'
+              }`}
+            >
+              Products & Services
+            </button>
+            <button
+              onClick={() => setTab('blogs')}
+              className={`px-3 py-1.5 rounded-full border ${
+                tab === 'blogs'
+                  ? 'border-cyan bg-cyan/10 text-cyan'
+                  : 'border-slate-700 text-slate-300 hover:border-cyan hover:text-cyan'
+              }`}
+            >
+              Blog
+            </button>
+            <button
+              onClick={() => setTab('settings')}
+              className={`px-3 py-1.5 rounded-full border ${
+                tab === 'settings'
+                  ? 'border-cyan bg-cyan/10 text-cyan'
+                  : 'border-slate-700 text-slate-300 hover:border-cyan hover:text-cyan'
+              }`}
+            >
+              Company Settings
+            </button>
+            <button
+              onClick={() => setTab('testimonials')}
+              className={`px-3 py-1.5 rounded-full border ${
+                tab === 'testimonials'
+                  ? 'border-cyan bg-cyan/10 text-cyan'
+                  : 'border-slate-700 text-slate-300 hover:border-cyan hover:text-cyan'
+              }`}
+            >
+              Testimonials
+            </button>
+          </div>
+        </div>
+
+        {tab === 'products' && (
+          <div className="grid lg:grid-cols-2 gap-6">
+            <div className="glass rounded-3xl border border-slate-800/80 p-4 sm:p-5">
+              <h2 className="text-sm font-semibold text-slate-100 mb-3">
+                {editingProduct.id ? 'Edit Product/Service' : 'Add Product/Service'}
+              </h2>
+              <form className="space-y-3 text-xs" onSubmit={handleSaveProduct}>
+                <div>
+                  <label className="block mb-1 text-slate-300">Name</label>
+                  <input
+                    type="text"
+                    required
+                    value={editingProduct.name}
+                    onChange={e => setEditingProduct({ ...editingProduct, name: e.target.value })}
+                    className="w-full rounded-lg bg-slate-900/80 border border-slate-700 px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-cyan"
+                  />
+                </div>
+                <div>
+                  <label className="block mb-1 text-slate-300">Description</label>
+                  <textarea
+                    rows="3"
+                    required
+                    value={editingProduct.description}
+                    onChange={e => setEditingProduct({ ...editingProduct, description: e.target.value })}
+                    className="w-full rounded-lg bg-slate-900/80 border border-slate-700 px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-cyan"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block mb-1 text-slate-300">Price (0 for quote)</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={editingProduct.price}
+                      onChange={e => setEditingProduct({ ...editingProduct, price: e.target.value })}
+                      className="w-full rounded-lg bg-slate-900/80 border border-slate-700 px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-cyan"
+                    />
+                  </div>
+                  <div>
+                    <label className="block mb-1 text-slate-300">Category</label>
+                    <select
+                      value={editingProduct.category}
+                      onChange={e => setEditingProduct({ ...editingProduct, category: e.target.value })}
+                      className="w-full rounded-lg bg-slate-900/80 border border-slate-700 px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-cyan"
+                    >
+                      <option>Product</option>
+                      <option>Service</option>
+                    </select>
+                  </div>
+                </div>
+                <div>
+                  <label className="block mb-1 text-slate-300">Image URL</label>
+                  <input
+                    type="url"
+                    value={editingProduct.image}
+                    onChange={e => setEditingProduct({ ...editingProduct, image: e.target.value })}
+                    className="w-full rounded-lg bg-slate-900/80 border border-slate-700 px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-cyan"
+                  />
+                  <div className="text-[10px] text-slate-500 mt-1">
+                    For MVP, use an external image URL. File upload can be added later.
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <input
+                    id="featured"
+                    type="checkbox"
+                    checked={editingProduct.featured}
+                    onChange={e => setEditingProduct({ ...editingProduct, featured: e.target.checked })}
+                    className="rounded border-slate-600 bg-slate-900 text-cyan focus:ring-cyan"
+                  />
+                  <label htmlFor="featured" className="text-slate-300">Featured on homepage</label>
+                </div>
+                <div className="flex items-center gap-2 pt-1">
+                  <button
+                    type="submit"
+                    className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-full bg-cyan text-slate-900 font-semibold text-xs hover:bg-sky-300 transition"
+                  >
+                    {editingProduct.id ? 'Update item' : 'Add item'}
+                  </button>
+                  {editingProduct.id && (
+                    <button
+                      type="button"
+                      onClick={() => setEditingProduct(emptyProduct)}
+                      className="text-[11px] text-slate-400 hover:text-slate-200"
+                    >
+                      Cancel edit
+                    </button>
+                  )}
+                </div>
+              </form>
+            </div>
+            <div className="glass rounded-3xl border border-slate-800/80 p-4 sm:p-5">
+              <h2 className="text-sm font-semibold text-slate-100 mb-3">Existing Items</h2>
+              {products.length === 0 ? (
+                <div className="text-xs text-slate-400">No items created yet.</div>
+              ) : (
+                <div className="space-y-2 max-h-96 overflow-y-auto scrollbar-thin pr-1">
+                  {products.map(p => (
+                    <div
+                      key={p.id}
+                      className="flex items-center gap-3 text-xs border border-slate-800/80 rounded-xl px-2.5 py-2 hover:border-cyan/40 transition"
+                    >
+                      <img src={p.image} alt={p.name} className="w-10 h-10 rounded-lg object-cover" />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <div className="font-semibold text-slate-100 truncate">{p.name}</div>
+                          <span className="px-1.5 py-0.5 rounded-full bg-slate-900 border border-slate-700 text-[10px] text-slate-300">
+                            {p.category}
+                          </span>
+                          {p.featured && (
+                            <span className="px-1.5 py-0.5 rounded-full bg-cyan/10 border border-cyan/40 text-[10px] text-cyan">
+                              Featured
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-[11px] text-slate-400 truncate">
+                          {p.description}
+                        </div>
+                      </div>
+                      <div className="flex flex-col items-end gap-1">
+                        <div className="text-[11px] text-cyan">
+                          {p.price && p.price > 0 ? `$${p.price.toFixed(2)}` : 'Quote'}
+                        </div>
+                        <div className="flex gap-1">
+                          <button
+                            onClick={() => handleEditProduct(p)}
+                            className="px-2 py-0.5 rounded-full bg-slate-800 text-[10px] text-slate-100 hover:bg-slate-700"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => handleDeleteProduct(p.id)}
+                            className="px-2 py-0.5 rounded-full bg-rose-500/10 text-[10px] text-rose-300 hover:bg-rose-500/30"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {tab === 'blogs' && (
+          <div className="grid lg:grid-cols-2 gap-6">
+            <div className="glass rounded-3xl border border-slate-800/80 p-4 sm:p-5">
+              <h2 className="text-sm font-semibold text-slate-100 mb-3">
+                {editingBlog.id ? 'Edit Blog Post' : 'Create Blog Post'}
+              </h2>
+              <form className="space-y-3 text-xs" onSubmit={handleSaveBlog}>
+                <div>
+                  <label className="block mb-1 text-slate-300">Title</label>
+                  <input
+                    type="text"
+                    required
+                    value={editingBlog.title}
+                    onChange={e => setEditingBlog({ ...editingBlog, title: e.target.value })}
+                    className="w-full rounded-lg bg-slate-900/80 border border-slate-700 px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-cyan"
+                  />
+                </div>
+                <div>
+                  <label className="block mb-1 text-slate-300">Featured Image URL</label>
+                  <input
+                    type="url"
+                    required
+                    value={editingBlog.image}
+                    onChange={e => setEditingBlog({ ...editingBlog, image: e.target.value })}
+                    className="w-full rounded-lg bg-slate-900/80 border border-slate-700 px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-cyan"
+                  />
+                </div>
+                <div>
+                  <label className="block mb-1 text-slate-300">Publish Date</label>
+                  <input
+                    type="date"
+                    required
+                    value={editingBlog.date}
+                    onChange={e => setEditingBlog({ ...editingBlog, date: e.target.value })}
+                    className="w-full rounded-lg bg-slate-900/80 border border-slate-700 px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-cyan"
+                  />
+                </div>
+                <div>
+                  <label className="block mb-1 text-slate-300">Content</label>
+                  <textarea
+                    rows="5"
+                    required
+                    value={editingBlog.content}
+                    onChange={e => setEditingBlog({ ...editingBlog, content: e.target.value })}
+                    className="w-full rounded-lg bg-slate-900/80 border border-slate-700 px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-cyan"
+                  />
+                </div>
+                <div className="flex items-center gap-2">
+                  <input
+                    id="featuredOnTicker"
+                    type="checkbox"
+                    checked={editingBlog.featuredOnTicker}
+                    onChange={e => setEditingBlog({ ...editingBlog, featuredOnTicker: e.target.checked })}
+                    className="rounded border-slate-600 bg-slate-900 text-cyan focus:ring-cyan"
+                  />
+                  <label htmlFor="featuredOnTicker" className="text-slate-300">
+                    Show in homepage ticker
+                  </label>
+                </div>
+                <div className="flex items-center gap-2 pt-1">
+                  <button
+                    type="submit"
+                    className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-full bg-cyan text-slate-900 font-semibold text-xs hover:bg-sky-300 transition"
+                  >
+                    {editingBlog.id ? 'Update post' : 'Publish post'}
+                  </button>
+                  {editingBlog.id && (
+                    <button
+                      type="button"
+                      onClick={() => setEditingBlog(emptyBlog)}
+                      className="text-[11px] text-slate-400 hover:text-slate-200"
+                    >
+                      Cancel edit
+                    </button>
+                  )}
+                </div>
+              </form>
+            </div>
+            <div className="glass rounded-3xl border border-slate-800/80 p-4 sm:p-5">
+              <h2 className="text-sm font-semibold text-slate-100 mb-3">Existing Posts</h2>
+              {blogs.length === 0 ? (
+                <div className="text-xs text-slate-400">No blog posts created yet.</div>
+              ) : (
+                <div className="space-y-2 max-h-96 overflow-y-auto scrollbar-thin pr-1">
+                  {blogs.map(b => (
+                    <div
+                      key={b.id}
+                      className="flex items-center gap-3 text-xs border border-slate-800/80 rounded-xl px-2.5 py-2 hover:border-cyan/40 transition"
+                    >
+                      <img src={b.image} alt={b.title} className="w-10 h-10 rounded-lg object-cover" />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <div className="font-semibold text-slate-100 truncate">{b.title}</div>
+                          {b.featuredOnTicker && (
+                            <span className="px-1.5 py-0.5 rounded-full bg-cyan/10 border border-cyan/40 text-[10px] text-cyan">
+                              Ticker
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-[11px] text-slate-400 truncate">
+                          {new Date(b.date).toLocaleDateString()}
+                        </div>
+                      </div>
+                      <div className="flex flex-col items-end gap-1">
+                        <div className="flex gap-1">
+                          <button
+                            onClick={() => handleEditBlog(b)}
+                            className="px-2 py-0.5 rounded-full bg-slate-800 text-[10px] text-slate-100 hover:bg-slate-700"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => handleDeleteBlog(b.id)}
+                            className="px-2 py-0.5 rounded-full bg-rose-500/10 text-[10px] text-rose-300 hover:bg-rose-500/30"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {tab === 'settings' && (
+          <div className="glass rounded-3xl border border-slate-800/80 p-4 sm:p-5 max-w-3xl">
+            <h2 className="text-sm font-semibold text-slate-100 mb-3">Company Settings</h2>
+            <form className="space-y-3 text-xs" onSubmit={handleSaveSettings}>
+              <div>
+                <label className="block mb-1 text-slate-300">Company Name</label>
+                <input
+                  type="text"
+                  value={settings.companyName}
+                  onChange={e => setSettings({ ...settings, companyName: e.target.value })}
+                  className="w-full rounded-lg bg-slate-900/80 border border-slate-700 px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-cyan"
+                />
+              </div>
+              <div className="grid sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block mb-1 text-slate-300">Primary WhatsApp Number</label>
+                  <input
+                    type="text"
+                    value={settings.whatsappNumber}
+                    onChange={e => setSettings({ ...settings, whatsappNumber: e.target.value })}
+                    className="w-full rounded-lg bg-slate-900/80 border border-slate-700 px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-cyan"
+                  />
+                  <div className="text-[10px] text-slate-500 mt-1">
+                    Include country code, e.g. +1234567890
+                  </div>
+                </div>
+                <div>
+                  <label className="block mb-1 text-slate-300">Primary Contact Number</label>
+                  <input
+                    type="text"
+                    value={settings.contactNumber}
+                    onChange={e => setSettings({ ...settings, contactNumber: e.target.value })}
+                    className="w-full rounded-lg bg-slate-900/80 border border-slate-700 px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-cyan"
+                  />
+                </div>
+              </div>
+              <div className="grid sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block mb-1 text-slate-300">Alternate Contact Number</label>
+                  <input
+                    type="text"
+                    value={settings.contactNumberAlt}
+                    onChange={e => setSettings({ ...settings, contactNumberAlt: e.target.value })}
+                    className="w-full rounded-lg bg-slate-900/80 border border-slate-700 px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-cyan"
+                  />
+                </div>
+                <div>
+                  <label className="block mb-1 text-slate-300">Support Email</label>
+                  <input
+                    type="email"
+                    value={settings.email}
+                    onChange={e => setSettings({ ...settings, email: e.target.value })}
+                    className="w-full rounded-lg bg-slate-900/80 border border-slate-700 px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-cyan"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block mb-1 text-slate-300">Physical Address</label>
+                <textarea
+                  rows="2"
+                  value={settings.address}
+                  onChange={e => setSettings({ ...settings, address: e.target.value })}
+                  className="w-full rounded-lg bg-slate-900/80 border border-slate-700 px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-cyan"
+                />
+              </div>
+              <div>
+                <label className="block mb-1 text-slate-300">Website URL</label>
+                <input
+                  type="url"
+                  value={settings.websiteUrl}
+                  onChange={e => setSettings({ ...settings, websiteUrl: e.target.value })}
+                  className="w-full rounded-lg bg-slate-900/80 border border-slate-700 px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-cyan"
+                />
+              </div>
+              <div className="grid sm:grid-cols-3 gap-3">
+                <div>
+                  <label className="block mb-1 text-slate-300">Facebook</label>
+                  <input
+                    type="url"
+                    value={settings.facebook}
+                    onChange={e => setSettings({ ...settings, facebook: e.target.value })}
+                    className="w-full rounded-lg bg-slate-900/80 border border-slate-700 px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-cyan"
+                  />
+                </div>
+                <div>
+                  <label className="block mb-1 text-slate-300">Instagram</label>
+                  <input
+                    type="url"
+                    value={settings.instagram}
+                    onChange={e => setSettings({ ...settings, instagram: e.target.value })}
+                    className="w-full rounded-lg bg-slate-900/80 border border-slate-700 px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-cyan"
+                  />
+                </div>
+                <div>
+                  <label className="block mb-1 text-slate-300">X (Twitter)</label>
+                  <input
+                    type="url"
+                    value={settings.twitter}
+                    onChange={e => setSettings({ ...settings, twitter: e.target.value })}
+                    className="w-full rounded-lg bg-slate-900/80 border border-slate-700 px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-cyan"
+                  />
+                </div>
+              </div>
+              <button
+                type="submit"
+                className="mt-2 inline-flex items-center justify-center gap-1.5 px-5 py-2 rounded-full bg-cyan text-slate-900 font-semibold text-xs hover:bg-sky-300 transition"
+              >
+                Save Settings
+              </button>
+            </form>
+          </div>
+        )}
+
+        {tab === 'testimonials' && (
+          <div className="grid lg:grid-cols-2 gap-6">
+            <div className="glass rounded-3xl border border-slate-800/80 p-4 sm:p-5">
+              <h2 className="text-sm font-semibold text-slate-100 mb-3">
+                {editingTestimonial.id ? 'Edit Testimonial' : 'Add Testimonial'}
+              </h2>
+              <form className="space-y-3 text-xs" onSubmit={handleSaveTestimonial}>
+                <div>
+                  <label className="block mb-1 text-slate-300">Customer Name</label>
+                  <input
+                    type="text"
+                    required
+                    value={editingTestimonial.name}
+                    onChange={e => setEditingTestimonial({ ...editingTestimonial, name: e.target.value })}
+                    className="w-full rounded-lg bg-slate-900/80 border border-slate-700 px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-cyan"
+                  />
+                </div>
+                <div>
+                  <label className="block mb-1 text-slate-300">Testimonial Message</label>
+                  <textarea
+                    rows="4"
+                    required
+                    value={editingTestimonial.message}
+                    onChange={e => setEditingTestimonial({ ...editingTestimonial, message: e.target.value })}
+                    className="w-full rounded-lg bg-slate-900/80 border border-slate-700 px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-cyan"
+                  />
+                </div>
+                <div>
+                  <label className="block mb-1 text-slate-300">Customer Image URL (optional)</label>
+                  <input
+                    type="url"
+                    value={editingTestimonial.image}
+                    onChange={e => setEditingTestimonial({ ...editingTestimonial, image: e.target.value })}
+                    className="w-full rounded-lg bg-slate-900/80 border border-slate-700 px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-cyan"
+                  />
+                </div>
+                <div className="flex items-center gap-2 pt-1">
+                  <button
+                    type="submit"
+                    className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-full bg-cyan text-slate-900 font-semibold text-xs hover:bg-sky-300 transition"
+                  >
+                    {editingTestimonial.id ? 'Update testimonial' : 'Add testimonial'}
+                  </button>
+                  {editingTestimonial.id && (
+                    <button
+                      type="button"
+                      onClick={() => setEditingTestimonial(emptyTestimonial)}
+                      className="text-[11px] text-slate-400 hover:text-slate-200"
+                    >
+                      Cancel edit
+                    </button>
+                  )}
+                </div>
+              </form>
+            </div>
+            <div className="glass rounded-3xl border border-slate-800/80 p-4 sm:p-5">
+              <h2 className="text-sm font-semibold text-slate-100 mb-3">Existing Testimonials</h2>
+              {testimonials.length === 0 ? (
+                <div className="text-xs text-slate-400">No testimonials added yet.</div>
+              ) : (
+                <div className="space-y-2 max-h-96 overflow-y-auto scrollbar-thin pr-1">
+                  {testimonials.map(t => (
+                    <div
+                      key={t.id}
+                      className="flex items-center gap-3 text-xs border border-slate-800/80 rounded-xl px-2.5 py-2 hover:border-cyan/40 transition"
+                    >
+                      <div className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-[11px] text-slate-200">
+                        {t.image ? (
+                          <img src={t.image} alt={t.name} className="w-full h-full rounded-full object-cover" />
+                        ) : (
+                          (t.name || 'C')[0].toUpperCase()
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-semibold text-slate-100 truncate">{t.name}</div>
+                        <div className="text-[11px] text-slate-400 truncate">
+                          {t.message}
+                        </div>
+                      </div>
+                      <div className="flex flex-col items-end gap-1">
+                        <div className="flex gap-1">
+                          <button
+                            onClick={() => handleEditTestimonial(t)}
+                            className="px-2 py-0.5 rounded-full bg-slate-800 text-[10px] text-slate-100 hover:bg-slate-700"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => handleDeleteTestimonial(t.id)}
+                            className="px-2 py-0.5 rounded-full bg-rose-500/10 text-[10px] text-rose-300 hover:bg-rose-500/30"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </main>
+    );
+  }
+
+  // --- Root App ---
+  function App() {
+    const [route, setRoute] = useState(window.location.hash.replace('#', '') || '/');
+    const [products, setProducts] = useState(() => loadOrInit(STORAGE_KEYS.PRODUCTS, defaultProducts));
+    const [blogs, setBlogs] = useState(() => loadOrInit(STORAGE_KEYS.BLOGS, defaultBlogs));
+    const [settings, setSettings] = useState(() => loadOrInit(STORAGE_KEYS.SETTINGS, defaultSettings));
+    const [testimonials, setTestimonials] = useState(() => loadOrInit(STORAGE_KEYS.TESTIMONIALS, defaultTestimonials));
+    const [authToken, setAuthToken] = useState(() => (typeof window !== 'undefined' ? window.localStorage.getItem(STORAGE_KEYS.AUTH) : null));
+
+    const [selectedProduct, setSelectedProduct] = useState(null);
+    const [selectedBlog, setSelectedBlog] = useState(null);
+
+    useEffect(() => {
+      function handleHashChange() {
+        const newRoute = window.location.hash.replace('#', '') || '/';
+        setRoute(newRoute);
+      }
+      window.addEventListener('hashchange', handleHashChange);
+      return () => window.removeEventListener('hashchange', handleHashChange);
+    }, []);
+
+    function navigate(path) {
+      window.location.hash = path;
+    }
+
+    function handleOpenProductDetails(item) {
+      setSelectedProduct(item);
+      navigate('/product/' + item.id);
+    }
+
+    function handleOpenBlog(blog) {
+      setSelectedBlog(blog);
+      navigate('/blog/' + blog.id);
+    }
+
+    useEffect(() => {
+      if (route.startsWith('/product/')) {
+        const id = route.split('/')[2];
+        const item = products.find(p => p.id === id);
+        setSelectedProduct(item || null);
+      }
+      if (route.startsWith('/blog/')) {
+        const id = route.split('/')[2];
+        const blog = blogs.find(b => b.id === id);
+        setSelectedBlog(blog || null);
+      }
+    }, [route, products, blogs]);
+
+    function handleLogout() {
+      setAuthToken(null);
+      if (typeof window !== 'undefined') {
+        window.localStorage.removeItem(STORAGE_KEYS.AUTH);
+      }
+      navigate('/');
+    }
+
+    const isAdminAuthenticated = !!authToken;
+
+    let content = null;
+    if (route === '/' || route === '') {
+      content = (
+        <HomePage
+          products={products}
+          blogs={blogs}
+          settings={settings}
+          onNavigate={navigate}
+          onOpenProductDetails={handleOpenProductDetails}
+        />
+      );
+    } else if (route === '/catalog') {
+      content = (
+        <CatalogPage
+          products={products}
+          settings={settings}
+          onOpenProductDetails={handleOpenProductDetails}
+        />
+      );
+    } else if (route.startsWith('/product/')) {
+      content = (
+        <ProductDetailsPage
+          product={selectedProduct}
+          settings={settings}
+        />
+      );
+    } else if (route === '/blog') {
+      content = (
+        <BlogPage
+          blogs={blogs}
+          onOpenBlog={handleOpenBlog}
+        />
+      );
+    } else if (route.startsWith('/blog/')) {
+      content = (
+        <BlogDetailsPage
+          blog={selectedBlog}
+        />
+      );
+    } else if (route === '/about') {
+      content = (
+        <AboutPage
+          settings={settings}
+          testimonials={testimonials}
+        />
+      );
+    } else if (route === '/contact') {
+      content = (
+        <ContactPage
+          settings={settings}
+        />
+      );
+    } else if (route.startsWith('/admin')) {
+      content = isAdminAuthenticated ? (
+        <AdminDashboard
+          products={products}
+          blogs={blogs}
+          settings={settings}
+          testimonials={testimonials}
+          setProducts={setProducts}
+          setBlogs={setBlogs}
+          setSettings={setSettings}
+          setTestimonials={setTestimonials}
+        />
+      ) : (
+        <AdminLogin onLogin={token => { setAuthToken(token); navigate('/admin'); }} />
+      );
+    } else {
+      content = (
+        <main className="max-w-6xl mx-auto px-4 sm:px-6 pt-10 pb-16 fade-in">
+          <div className="text-sm text-slate-400">Page not found.</div>
+        </main>
+      );
+    }
+
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Header
+          currentRoute={route}
+          onNavigate={navigate}
+          isAdminAuthenticated={isAdminAuthenticated}
+          onLogout={handleLogout}
+        />
+        <div className="flex-1">
+          {content}
+        </div>
+        <Footer settings={settings} />
+      </div>
+    );
+  }
+
+  ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
